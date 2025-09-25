@@ -1,0 +1,28 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "herlife-login",
+          "appId": "1:966564191119:android:8dbf5bf7b0ca88efd189fa",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "herlife-login",
+          "configurations": {
+            "android": "1:966564191119:android:8dbf5bf7b0ca88efd189fa",
+            "web": "1:966564191119:web:52d8020bbe1f4f63d189fa"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

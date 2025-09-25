@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "966564191119",
+    "project_id": "herlife-login",
+    "storage_bucket": "herlife-login.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966564191119:android:8dbf5bf7b0ca88efd189fa",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9eQsLvS-CmAX3E0EhqI1fAq1wYO8bBgQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
