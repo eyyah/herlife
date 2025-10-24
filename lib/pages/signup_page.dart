@@ -112,33 +112,65 @@ class SignupPage extends StatelessWidget {
                     // Email Textfield
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 35.0),
-                      child: MyTextField(
-                        controller: emailController,
-                        hintText: 'Email',
-                        obscureText: false,
-                      ),
+                      child: 
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Email',
+                              style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 5),
+                            MyTextField(
+                              controller: emailController,
+                              hintText: 'Email',
+                              obscureText: false,
+                            ),
+                          ],
+                        ),
                     ),
                     const SizedBox(height: 20),
 
                     // Username Textfield
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 35.0),
-                      child: MyTextField(
-                        controller: usernameController,
-                        hintText: 'Username',
-                        obscureText: false,
-                      ),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Username',
+                              style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 5),
+                            MyTextField(
+                              controller: usernameController,
+                              hintText: 'Username',
+                              obscureText: false,
+                            ),
+                          ],
+                        ),
                     ),
                     const SizedBox(height: 20),
 
                     // Password Textfield
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 35.0),
-                      child: MyTextField(
-                        controller: passwordController,
-                        hintText: 'Password',
-                        obscureText: true,
-                      ),
+                      child: 
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Password',
+                              style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 5),
+                              MyTextField(
+                              controller: passwordController,
+                              hintText: 'Password',
+                              obscureText: true,
+                            ),
+                          ],
+                        ),
                     ),
                     const SizedBox(height: 35),
 
@@ -152,27 +184,6 @@ class SignupPage extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 30),
-
-                    // Or separator
-                    const Text(
-                      'Or',
-                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Social Media Buttons
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SquareTile(imagePath: 'lib/images/google.png'),
-                        SizedBox(width: 25),
-                        SquareTile(imagePath: 'lib/images/apple.png'),
-                        SizedBox(width: 25),
-                        SquareTile(imagePath: 'lib/images/facebook.png'),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
                   ],
                 ),
               ),
