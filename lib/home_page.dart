@@ -1,10 +1,11 @@
+
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shake/shake.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_sms/flutter_sms.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:developer' as developer;
 
 class HomePage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
     _requestPermissions();
     if (!kIsWeb) {
       _shakeDetector = ShakeDetector.autoStart(
-        onPhoneShake: (ShakeDirection) {
+        onPhoneShake: () {
           // It's safer to handle UI logic after the current frame is built
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && !_isSending) {
@@ -54,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Shake detected! Sending emergency message...'),
+        content: Text('Shake detected! Preparing emergency message...'),
         backgroundColor: Colors.orange,
       ),
     );
@@ -66,7 +67,8 @@ class _HomePageState extends State<HomePage> {
         await _triggerEmergencyMessage(_emergencyContact!);
       }
     } finally {
-      await Future.delayed(const Duration(seconds: 10));
+      // Keep the sending state for a bit longer so the user sees the message
+      await Future.delayed(const Duration(seconds: 5));
       if (mounted) {
         setState(() {
           _isSending = false;
@@ -87,11 +89,11 @@ class _HomePageState extends State<HomePage> {
       }
       await _sendSms(message, [contact]);
     } catch (e) {
-      developer.log('Error sending emergency message: $e', name: 'HomePage');
+      developer.log('Error preparing emergency message: $e', name: 'HomePage');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error sending message: $e'),
+          content: Text('Error preparing message: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -106,7 +108,7 @@ class _HomePageState extends State<HomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Location services are disabled. Please enable the services',
+              'Location services are disabled. Please enable them in your settings.',
             ),
           ),
         );
@@ -118,7 +120,7 @@ class _HomePageState extends State<HomePage> {
         if (permission == LocationPermission.denied) {
           if (!mounted) return null;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied')),
+            const SnackBar(content: Text('Location permissions are denied.')),
           );
           return null;
         }
@@ -128,52 +130,59 @@ class _HomePageState extends State<HomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Location permissions are permanently denied, we cannot request permissions.',
+              'Location permissions are permanently denied. Please enable them in your settings.',
             ),
           ),
         );
         return null;
       }
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      // CORRECTED: `getCurrentPosition` in the new version doesn't take desiredAccuracy.
+      // It uses the best available accuracy by default.
+      return await Geolocator.getCurrentPosition();
     } catch (e) {
       developer.log('Error getting location: $e', name: 'HomePage');
       return null;
     }
   }
 
+  // REWRITTEN: This function now uses `url_launcher` to open the default SMS app.
   Future<void> _sendSms(String message, List<String> recipients) async {
     if (kIsWeb) {
-      const warning = 'SMS sending is not supported on web platforms.';
+      const warning = 'SMS functionality is not available on web.';
       developer.log(warning, name: 'HomePage.sendSms');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(warning), backgroundColor: Colors.orange),
       );
       return;
     }
+
+    final Uri smsUri = Uri(
+      scheme: 'sms',
+      path: recipients.join(','), // Allows sending to multiple recipients
+      queryParameters: <String, String>{
+        'body': message,
+      },
+    );
+
     try {
-      String result = await sendSMS(
-        message: message,
-        recipients: recipients,
-        sendDirect: true,
-      );
-      developer.log(result, name: 'HomePage.sendSms');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Emergency message sent!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (error) {
-      developer.log('SMS Error: $error', name: 'HomePage.sendSms');
+      if (await canLaunchUrl(smsUri)) {
+        await launchUrl(smsUri);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Opening SMS app to send emergency message...'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw 'Could not launch SMS app.';
+      }
+    } catch (e) {
+      developer.log('SMS Error: $e', name: 'HomePage.sendSms');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Failed to send SMS: $error. Please grant SMS permissions.',
-          ),
+          content: Text('Failed to open SMS app: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -204,7 +213,8 @@ class _HomePageState extends State<HomePage> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a phone number';
                 }
-                if (!RegExp(r'^\+?[0-9]{10,13}$').hasMatch(value)) {
+                // Simple validation for a phone number
+                if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(value)) {
                   return 'Enter a valid phone number';
                 }
                 return null;
@@ -215,11 +225,6 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                if (mounted && _isSending) {
-                  setState(() {
-                    _isSending = false;
-                  });
-                }
               },
               child: const Text('Cancel'),
             ),
@@ -247,11 +252,12 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.blue,
         ),
       );
+      // If the shake was triggered before setting a contact, now send the message.
       if (_isSending) {
         await _triggerEmergencyMessage(contact);
       }
     } else {
-      if (mounted && _isSending) {
+       if (mounted && _isSending) {
         setState(() {
           _isSending = false;
         });
@@ -276,8 +282,10 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
+              // Assuming you have a login route at '/'
               context.go('/');
             },
+            tooltip: 'Logout',
           ),
         ],
       ),
@@ -288,7 +296,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.security,
+                Icons.sos,
                 size: 80,
                 color: Theme.of(context).primaryColor,
               ),
@@ -301,8 +309,8 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 10),
               Text(
                 kIsWeb
-                    ? 'The emergency shake feature is only available on mobile devices.'
-                    : 'In an emergency, shake your phone twice to send an SMS with your location to your contact.',
+                    ? 'The emergency shake feature is not available on the web.'
+                    : 'In an emergency, shake your phone twice. We will open your SMS app with a pre-filled message and your location.',
                 style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                 textAlign: TextAlign.center,
               ),
@@ -319,7 +327,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ElevatedButton.icon(
-                icon: const Icon(Icons.contact_phone),
+                icon: const Icon(Icons.contact_phone_outlined),
                 onPressed: _showEmergencyContactDialog,
                 label: Text(
                   _emergencyContact == null

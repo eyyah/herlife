@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/components/my_button.dart';
 import 'package:myapp/components/my_textfield.dart';
 import 'package:myapp/components/signup_arc_painter.dart';
-import 'package:myapp/components/square_tile.dart';
+//import 'package:myapp/components/square_tile.dart';
 import 'package:myapp/models/user_model.dart';
 import 'package:myapp/services/database_helper.dart';
 import 'package:sqflite/sqflite.dart'; // Import sqflite
