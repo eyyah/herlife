@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shake/shake.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_sms/flutter_sms.dart';
+// import 'package:flutter_sms/flutter_sms.dart';
 import 'dart:developer' as developer;
 
 class HomePage extends StatefulWidget {
@@ -153,12 +153,12 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     try {
-      String result = await sendSMS(
-        message: message,
-        recipients: recipients,
-        sendDirect: true,
-      );
-      developer.log(result, name: 'HomePage.sendSms');
+      // String result = await sendSMS(
+      //   message: message,
+      //   recipients: recipients,
+      //   sendDirect: true,
+      // );
+      // developer.log(result, name: 'HomePage.sendSms');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
