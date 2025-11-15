@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 class SquareTile extends StatelessWidget {
   final String imagePath;
   final Function()? onTap;
-  const SquareTile({
-    super.key,
-    required this.imagePath,
-    this.onTap,
-  });
+  const SquareTile({super.key, required this.imagePath, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +16,7 @@ class SquareTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           color: Colors.grey[200],
         ),
-        child: Image.asset(
-          imagePath,
-          height: 30,
-        ),
+        child: Image.asset(imagePath, height: 30),
       ),
     );
   }

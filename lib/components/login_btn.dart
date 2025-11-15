@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
-class MyButton extends StatelessWidget {
+class LogInButton extends StatelessWidget {
   final Function()? onTap;
+  final String text; // <-- ADD THIS
 
-  const MyButton({super.key, required this.onTap, required String text});
+  const LogInButton({
+    super.key,
+    required this.onTap,
+    required this.text, // <-- USE IT HERE
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,21 +18,14 @@ class MyButton extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6A1452),
-              Color(0xFFFFB3AE),
-            ],
-          ),
+          color: const Color(0xFFFFB3AE),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
-            "Sign In",
-            style: TextStyle(
-              color: Colors.white,
+            text, // <-- THIS MAKES THE BUTTON TEXT COME FROM THE LOGIN PAGE
+            style: const TextStyle(
+              color: Colors.black,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),

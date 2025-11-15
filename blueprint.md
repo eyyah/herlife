@@ -1,36 +1,61 @@
-# Project Blueprint
+# Her-Life App Blueprint
 
 ## Overview
 
-This document outlines the plan to resolve a critical Android build failure in the Flutter project. The application is currently unable to build due to an incompatibility with the `flutter_sms` package.
+Her-Life is a Flutter-based mobile application designed to provide a secure and personalized user experience. The application features user authentication (signup and login), and allows users to manage their profile information. The data is stored locally using an SQLite database. The application is built with a focus on a clean, modern design and a user-friendly interface.
 
-## The Problem
+## Implemented Features, Style, and Design
 
-The project is failing to build for Android with the error: `Namespace not specified` in the `flutter_sms` package. This is because the version of `flutter_sms` being used is not compatible with the modern Android Gradle Plugin versions used in this project.
+### Core Functionality
+*   **User Authentication:**
+    *   **Signup:** New users can create an account by providing their first name, last name, gender, phone number, email, and a password.
+    *   **Login:** Existing users can log in with their email and password.
+*   **Database:**
+    *   A local SQLite database is used to store user information.
+    *   The `sqflite` package is used for database operations.
+*   **Routing:**
+    *   The `go_router` package is used for navigation, providing a declarative routing solution.
+*   **State Management:**
+    *   The application uses a combination of `StatefulWidget` and `FutureBuilder` for managing local and asynchronous state.
 
-### Failed Attempts
+### UI and Design
+*   **Splash Screen:** A simple splash screen is displayed when the app starts.
+*   **Welcome Screen:** A welcome screen with buttons to navigate to the login and signup pages.
+*   **Login Page:** A clean login page with text fields for email and password, and a login button.
+*   **Signup Page:** A well-structured signup page with fields for all required user information. The labels for the text fields have been removed to create a cleaner look.
+*   **Home Page:** A home page that welcomes the user. It includes a button to view the database content in the debug console and a profile button.
+*   **Profile Page:** A profile page where users can view and update their personal information, including their name, email, and password.
+*   **Styling:**
+    *   The application uses a consistent theme with a purple color scheme.
+    *   Custom text fields and buttons are used for a modern look.
 
-Several attempts to fix the issue have been unsuccessful:
+## Current Change: Profile Page Logic and Bug Fixes
 
-1.  **Updating `minSdkVersion` and `multidex`:** These were not the root cause.
-2.  **Updating various dependencies:** While some packages were outdated, this did not solve the core incompatibility with `flutter_sms`.
-3.  **Attempting to directly patch the package:** This failed due to an inability to access the pub cache directly.
+The most recent changes focused on fixing a critical logic error in the `ProfilePage` and addressing several other issues identified by the `flutter analyze` tool.
 
-## The Path Forward: Stabilize and Replace
+### Plan and Steps for the Current Change (Completed)
 
-The following plan will be executed to get the application back to a runnable state and then re-implement the SMS functionality correctly.
+1.  **Diagnose the `ProfilePage` issue:** The initial problem was that the `TextEditingController`s were being re-initialized inside the `build` method, causing user input to be lost on every widget rebuild.
+2.  **Fix the `ProfilePage` issue:**
+    *   Moved the `TextEditingController` initialization to the `initState` method.
+    *   Populated the controllers with user data when the data is fetched from the database.
+    *   Implemented the `dispose` method to clean up the controllers.
+3.  **Address Analyzer Issues:**
+    *   **`database_helper.dart`:**
+        *   Added the missing `getUserById` and `updateUser` methods to the `DatabaseHelper` class.
+    *   **`profile_page.dart`:**
+        *   Updated the `ProfilePage` to handle the complete `User` model, including fields for all user properties.
+        *   Fixed the `use_build_context_synchronously` warning by adding a `mounted` check before showing a `ScaffoldMessenger`.
+    *   **`home_page.dart`:**
+        *   Fixed the `use_build_context_synchronously` warning by converting the `HomePage` to a `StatefulWidget` and adding a `mounted` check.
+    *   **`models/user_model.dart`:**
+        *   Removed unused imports (`dart:convert` and `package:crypto/crypto.dart`).
+    *   **`components/my_textfield.dart`:**
+        *   Fixed the `prefer_typing_uninitialized_variables` warning by explicitly typing the `controller` as a `TextEditingController`.
+4.  **Verification:**
+    *   Ran `dart format .` to ensure consistent code formatting.
+    *   Ran `flutter analyze` to confirm that all issues were resolved.
 
-### Step 1: Remove the Problematic Package
+## Previous Change: Signup Page UI
 
-To get the application building again, the `flutter_sms` package will be temporarily removed.
-
-*   **Action:** Remove the `flutter_sms` dependency from `pubspec.yaml`.
-*   **Action:** Run `flutter pub get` to update the project.
-
-### Step 2: Restore Core Functionality
-
-With the problematic package removed, the application's core features will be restored. This will involve updating the code to remove any references to the `flutter_sms` package.
-
-### Step 3: Find a Suitable Replacement for SMS Functionality
-
-With the application in a stable state, a modern, maintained, and compatible package for sending SMS messages will be researched and integrated. This will ensure that the SMS functionality is restored without compromising the project's stability.
+*   **Removed Labels:** The labels for the text fields on the signup page were removed to create a cleaner and more modern look. The `hintText` property of the `MyTextField` widget is now used to display the labels as hints.

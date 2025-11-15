@@ -1,11 +1,11 @@
-import 'package:sqflite/sqflite.dart';
+import 'dart:async';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:myapp/models/user_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
-
   static Database? _database;
 
   DatabaseHelper._internal();
@@ -17,44 +17,80 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDb() async {
-    String path = join(await getDatabasesPath(), 'user.db');
-    return await openDatabase(
-      path,
-      version: 3, // Incremented version to apply new schema
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
-    );
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'user_database.db');
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute(
-      'CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, username TEXT UNIQUE, password TEXT)',
-    );
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 3) {
-      // Simple upgrade strategy: drop and recreate
-      await db.execute('DROP TABLE IF EXISTS users');
-      await _onCreate(db, newVersion);
-    }
+  void _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        firstName TEXT,
+        lastName TEXT,
+        middleName TEXT,
+        phoneNumber TEXT,
+        email TEXT UNIQUE,
+        password TEXT
+      )
+    ''');
   }
 
   Future<int> saveUser(User user) async {
-    var dbClient = await database;
-    return await dbClient.insert('users', user.toMap(), conflictAlgorithm: ConflictAlgorithm.fail);
+    final db = await database;
+    return await db.insert(
+      'users',
+      user.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Future<User?> getUser(String username, String password) async {
-    var dbClient = await database;
-    var res = await dbClient.query(
+  Future<User?> getUser(String email, String password) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
       'users',
-      where: 'username = ? AND password = ?',
-      whereArgs: [username, password],
+      where: 'email = ? AND password = ?',
+      whereArgs: [email, password],
     );
-    if (res.isNotEmpty) {
-      return User.fromMap(res.first);
+
+    if (maps.isNotEmpty) {
+      return User.fromMap(maps.first);
+    } else {
+      return null;
     }
-    return null;
+  }
+
+  Future<User?> getUserById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return User.fromMap(maps.first);
+    } else {
+      return null;
+    }
+  }
+
+  Future<int> updateUser(User user) async {
+    final db = await database;
+    return await db.update(
+      'users',
+      user.toMap(),
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
+  }
+
+  // New method to get all users
+  Future<List<User>> getAllUsers() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('users');
+    return List.generate(maps.length, (i) {
+      return User.fromMap(maps[i]);
+    });
   }
 }

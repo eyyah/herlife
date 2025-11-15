@@ -1,88 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/pages/login_page.dart';
-import 'package:myapp/pages/signup_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:myapp/components/signup_btn.dart'; 
+import 'package:myapp/components/arc_painter.dart'; 
+import 'package:myapp/components/login_btn.dart';
 
-class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
+class Welcome extends StatelessWidget {
+  const Welcome({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height,
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 50),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const Column(
-                children: <Widget>[
-                  Text(
-                    "Welcome",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    "Slash is the best way to ship your app.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 15),
-                  ),
-                ],
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF6A1452), Color(0xFFFFB3AE)],
               ),
-              Container(
-                height: MediaQuery.of(context).size.height / 3,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('lib/images/logo.png'),
-                  ),
-                ),
-              ),
-              Column(
-                children: <Widget>[
-                  MaterialButton(
-                    minWidth: double.infinity,
-                    height: 60,
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-                    },
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(color: Colors.black),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  MaterialButton(
-                    minWidth: double.infinity,
-                    height: 60,
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage()));
-                    },
-                    color: const Color(0xFF6A1452),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: const Text(
-                      "Sign up",
+            ),
+          ),
+          CustomPaint(
+            painter: ArcPainter(),
+            child: SafeArea(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Image.asset('lib/images/logo.png', width: 100),
+                    const SizedBox(height: 60),
+                    const Text(
+                      'Welcome!',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
+                        fontSize: 32, 
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 50),
+                    SignupButton(
+                      onTap: () => context.go('/signup'), 
+                      text: 'Create Account',
+                    ),
+                    const SizedBox(height: 15),
+                    LogInButton(
+                      onTap: () => context.go('/login'), 
+                      text: 'Log In',
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
